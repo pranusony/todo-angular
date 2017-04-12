@@ -1,27 +1,32 @@
-
-path = require("path");
+var path = require("path");
 var util = require('./util');
 var httpPort = 3000;
+var chokidar = require('chokidar');
 
-
+var projectConfig = require("../project.config");
 var webpackConfig = require("../webpack.config");
 var webpack = require("webpack");
 var webpackMiddleware = require("webpack-dev-middleware");
-var compiler = webpack(webpackConfig);
+var compiler = webpack((typeof webpackConfig === 'function') ? webpackConfig() : webpackConfig);
 
 var server;
 var webpackPlugin;
 
-util.exec("npm run build",function(){
+var indexStaticPath = projectConfig.srcDir;
 
+var cmd = projectConfig.tsc;
+cmd = cmd + " -p src/api";
+
+util.exec(cmd, function (err) {
     serve();
-
 });
-
 
 function serve(){
 
+    console.log(indexStaticPath);
+
     server = require("../src/api/server");
+
     webpackPlugin = webpackMiddleware(compiler,{
         lazy: false,
         watchOptions: {
@@ -32,24 +37,13 @@ function serve(){
 
     var hotReloadPlugin = require("webpack-hot-middleware")(compiler);
 
-    server.start(httpPort,[webpackPlugin,hotReloadPlugin]);
+    server.start(httpPort,[webpackPlugin,hotReloadPlugin], indexStaticPath);
 
     console.log('Server running at http://localhost:' + httpPort);
+
 }
 
-function reload(filePath){
-    tinylr.changed({
-        body: {
-            files: [path.resolve('./' + filePath)]
-        }
-    });
-}
-
-function myWatch(filePaths,cb){
-    chokidar.watch(filePaths).on('change', cb);
-}
-
-process.on('exit', function(code){
+process.on('exit', function(){
     webpackPlugin.close();
     server.close();
 });
@@ -61,6 +55,11 @@ process.on('SIGINT', function(){
 });
 
 process.on('SIGTERM', function(){
+    webpackPlugin.close();
+    server.close();
+});
+
+process.on('SIGABRT', function(){
     webpackPlugin.close();
     server.close();
 });

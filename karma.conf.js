@@ -3,6 +3,7 @@
 var reporters = [,'mocha','kjhtml'];
 var webpackConfig;
 var isLocalTesting = true;
+
 if(process.env.NODE_ENV == "test" || process.env.NODE_ENV == "testing") // this means it is not a local test environment
 {
     reporters = reporters.concat(['coverage','remap-coverage']);
@@ -21,7 +22,6 @@ module.exports = function(config) {
         frameworks: ['jasmine'],
 
         files:[
-            {pattern: 'node_modules/core-js/client/shim.min.js', included:true, watched: false},
             {pattern: './karma-test-shim.js', watched: false}],
 
         reporters: reporters,
@@ -40,6 +40,11 @@ module.exports = function(config) {
             lcovonly:"./coverage/lcov.info",
             html: './coverage/html',
             cobertura: './coverage/cobertura/cobertura-coverage.xml'
+        },
+
+        browserConsoleLogOptions: {
+            level: 'log',
+            terminal: true
         }
     });
 };

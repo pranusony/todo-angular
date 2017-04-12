@@ -1,5 +1,22 @@
-$badass: #f86;
+
+//functions
+@import "functions";
+// Mixins
+@import "./prefixer";
+@import "./mixins";
+
+// Variables;
+@import "./variables";
+
+//typography
+@import "typography";
+
+//animations
+@import "animations";
+
+//globals
+@import "globals";
+
 body {
-  margin: 0;
-  background-color: $badass;
+  background-color: $background-color;
 }

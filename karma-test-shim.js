@@ -1,6 +1,7 @@
 Error.stackTraceLimit = Infinity;
 
+require("core-js/shim");
 
-var appContext = require.context('./test', true, /\.spec\.tsx?$|.test\.tsx?$/);
+var appContext = require.context('./tests', true, /\.spec\.tsx?$|.test\.tsx?$/);
 
 appContext.keys().forEach(appContext);

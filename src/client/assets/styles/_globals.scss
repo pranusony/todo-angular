@@ -1,0 +1,48 @@
+
+* {
+  @include border-box();
+}
+
+*:after,
+*::before {
+    @include border-box();
+}
+
+h1,h2,h3,h4,h5,h6 {
+  margin:5px 0 5px 0;
+}
+
+[hidden] {
+  display: none!important;
+}
+
+.v-group
+{
+  @include VGroup(5px);
+  position: relative;
+}
+
+.h-group
+{
+  @include HGroup(10px);
+  position: relative;
+}
+
+.vertical-align-middle
+{
+  @include align(center);
+}
+
+.vertical-gap-10 {
+  @include verticalGap(10px);
+}
+
+.color-dark-blue {
+  color: $color-dark-blue;
+}
+
+i {
+  color: $color-dark-blue;
+}
+
+

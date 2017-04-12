@@ -1,34 +1,12 @@
 
 var util = require('./util');
-var argv = require('minimist')(process.argv.slice(2));
+var projectConfig = require("../project.config");
 
-if(argv._ && argv._.length > 0) //look release build
-{
-    var subCommand = argv._[0];
+var testCMD = projectConfig.karma  + " start";
 
-    if(subCommand.toLowerCase() === "local")
-    {
+util.exec("npm run lint",function (err) {
 
-        var browser = "PhantomJS";
-        var testCMD = "karma start";
-        if(argv._.length == 2)
-        {
-            browser = argv._[1];
-        }
-        testCMD = testCMD + " --browsers " + browser;
-        util.series([testCMD], function(err){
-
-            if(err)
-            {
-                console.log(err);
-                process.exit(1);
-            }
-
-            process.exit(0);
-        });
-    }
-
-    if(subCommand == "e2e")
+    if(process.env.TEST_E2E) // look for End to End testing
     {
         var protractorCMD = "protractor";
 
@@ -43,22 +21,55 @@ if(argv._ && argv._.length > 0) //look release build
             process.exit(0);
         })
     }
-
-}
-else
-{
-    process.env.NODE_ENV = "test";
-
-    util.series(["npm run clean","karma start --single-run --no-auto-watch --browsers PhantomJS"], function(err){
-
-        if(err)
+    else
+    {
+        if(process.env.TEST_BROWSER)
         {
-            console.log(err);
-            process.exit(1);
+
+
+
+            testCMD = testCMD + " --browsers " + process.env.TEST_BROWSER;
+            util.series([testCMD], function(err){
+
+                if(err)
+                {
+                    console.log(err);
+                    process.exit(1);
+                }
+
+                process.exit(0);
+            });
+        }
+        else
+        {
+
+            testCMD = testCMD + " --single-run --no-auto-watch --browsers PhantomJS";
+            util.series(["npm run clean",testCMD], function(err){
+
+                if(err)
+                {
+                    console.log(err);
+                    process.exit(1);
+                }
+
+                var coverageBadger = require("./coverage-badger");
+
+                coverageBadger(function (err,report) {
+
+                    if(err)
+                    {
+                        console.log(err);
+                        process.exit(1);
+                    }
+
+                    process.exit(0);
+                })
+
+            });
         }
 
-        process.exit(0);
-    });
-}
+    }
+});
+
 
 

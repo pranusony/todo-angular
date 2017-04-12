@@ -21,7 +21,7 @@ module.exports = function (options) {
             test: /\.(js|tsx?)$/,
             enforce: 'post',
             loader: 'istanbul-instrumenter-loader',
-            include: projectConfig.srcClientDir,
+            include: projectConfig.srcDir,
             exclude: [
                 /node_modules/
             ]

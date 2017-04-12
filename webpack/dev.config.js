@@ -1,5 +1,6 @@
 
 var webpack = require("webpack");
+var projectConfig = require("../project.config");
 
 module.exports = function (options) {
 
@@ -27,10 +28,14 @@ module.exports = function (options) {
     **************************/
     devConfig.plugins.push(new webpack.SourceMapDevToolPlugin({
         filename: null, // if no value is provided the sourcemap is inlined
-        test: /\.(ts|js)($|\?)/i // process .js and .ts files only
+        test: /\.(tsx?|js)($|\?)/i // process .js and .ts files only
     }));
 
     devConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
+
+    devConfig.plugins.push(new webpack.DefinePlugin({
+        'process.env.NODE_ENV': '"development"'
+    }));
 
 
     /*************************
@@ -40,7 +45,13 @@ module.exports = function (options) {
     devConfig.module.rules.push({
 
         test: /\.scss$/,
-        loaders: ["style", "css", "sass"]
+        loaders: ["style-loader", "css-loader",
+            {loader: 'sass-loader',
+                options: {
+                    includePaths: [projectConfig.root("./node_modules/framework7/dist/img"),
+                        projectConfig.root("./node_modules/ionicons/dist/scss")]
+                },
+            }],
     });
 
     return devConfig;
