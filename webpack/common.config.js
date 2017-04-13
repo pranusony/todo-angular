@@ -1,10 +1,13 @@
 
 var webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const AotPlugin = require('@ngtools/webpack').AotPlugin;
 var projectConfig = require("../project.config");
 
 
 module.exports = function (options) {
+
+    var processIndexAndScss = options.env !== "test";
 
     /*************************
      * Common Entry
@@ -12,34 +15,45 @@ module.exports = function (options) {
 
     var entry = {
         'main': [
-            projectConfig.srcClientDirMain
+            projectConfig.srcDirMain
         ]
     };
 
-    if(!(options.env == "test"))
-    {
-        entry.main = entry.main.concat([
-            projectConfig.srcClientDirIndex,
-            projectConfig.srcClientDirMainCSS
-        ])
+    var indexFile = projectConfig.srcDirIndex ;
+
+    if(process.env.DOCS) {
+        indexFile = projectConfig.documentationDirIndex;
+        entry.main = [projectConfig.documentaionDirMain];
     }
 
+    var filename = "index.html";
+
+    if(processIndexAndScss)
+    {
+
+        entry.main = entry.main.concat([
+            indexFile,
+            projectConfig.srcDirMainCSS
+        ]);
+
+    }
 
     /*************************
      * Common Plugins
      **************************/
 
     var plugins = [
-        new webpack.NoErrorsPlugin(),
-        new webpack.optimize.OccurrenceOrderPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
+        new webpack.optimize.OccurrenceOrderPlugin()
 
     ];
 
-    if(!(options.env == "test"))
+    if(processIndexAndScss)
     {
 
         var htmlWebPackPlugin =   new HtmlWebpackPlugin({
-            template: projectConfig.srcClientDirIndex,
+            template: indexFile,
+            filename:filename,
             chunksSortMode: 'dependency',
             metadata: options,
             inject: 'body'
@@ -65,13 +79,70 @@ module.exports = function (options) {
         typescriptLoader.query.inlineSourceMap = true;
     }
 
+    // AOT uses a different typescript loader
+    if (options.aot === 'true') {
+
+        typescriptLoader = {test: /\.ts$/, loaders: ['@ngtools/webpack']};
+
+        plugins.push(new AotPlugin({
+            tsConfigPath: projectConfig.rootDir+"/tsconfig.json",
+            entryModule: projectConfig.srcDir + '/AppModule#AppModule',
+        }));
+
+        plugins.push(new webpack.optimize.UglifyJsPlugin({
+            minimize: true,
+            beautify: false,
+            mangle: {
+                screw_ie8: true,
+                keep_fnames: false
+            },
+            output: {
+                comments: false
+            },
+            compress: {
+                warnings: false,
+                screw_ie8: true
+            },
+            comments: false
+        }));
+    }
+
+    if (options.compress) {
+        var CompressionPlugin = require("compression-webpack-plugin");
+
+        plugins.push(new CompressionPlugin({
+            asset: "[path].gz[query]",
+            algorithm: "gzip",
+            test: /\.(js|html|css)$/,
+            threshold: 10240,
+            minRatio: 0.8,
+            deleteOriginalAssets: false
+        }));
+    }
+
     var rules = [
 
         typescriptLoader,
+        {
+            test: /\.css$/,
+            loaders: ["style-loader", "css-loader"]
+        },
+        {
+            test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+            loader: 'url-loader?limit=100000'
+        },
+        {
+            test: /\.png$/,
+            loader: "underscore-template-loader" // loaders: ['underscore-template-loader'] is also perfectly acceptable.
+        },
 
         {
             test: /\.html$/,
             loader: "underscore-template-loader" // loaders: ['underscore-template-loader'] is also perfectly acceptable.
+        },
+        {
+            test: /\.json$/,
+            use: 'json-loader'
         }
 
     ];
@@ -80,7 +151,7 @@ module.exports = function (options) {
     return {
         entry:entry,
         output: {
-            path: projectConfig.distClientDir,
+            path: projectConfig.root("dist/client"),
             filename: '[name].js'
         },
         resolve: {

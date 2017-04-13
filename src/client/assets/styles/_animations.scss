@@ -1,0 +1,40 @@
+
+////
+/// @section Styles
+/// @group animations
+////
+/// Slide out animation
+.slide-off-right {
+  z-index: 200;
+  transition: transform 1s;
+  transform-origin: left;
+  transform: translate(110%, 40%) rotate(20deg) skew(45deg, 45deg);
+}
+
+/// Slide out animation
+.slide-out-right {
+  $transitionTime:500ms;
+
+  transform: translate3d(0,0,0);
+  max-height: 1000px;
+  // @include transition(opacity $transitionTime ease-in-out,transform $transitionTime ease-in-out, max-height $transitionTime ease-in-out $transitionTime);
+  @include transition(all $transitionTime ease-in-out);
+
+  > * {
+    max-height: 1000px;
+    // @include transition(opacity $transitionTime ease-in-out, max-height $transitionTime ease-in-out $transitionTime);
+    @include transition(all $transitionTime ease-in-out);
+
+  }
+
+  &.slide-out-right-active {
+    transform: translate(100%,0);
+    opacity: 0;
+    max-height: 0;
+    > * {
+      opacity: 0;
+      max-height: 0;
+    }
+  }
+}
+

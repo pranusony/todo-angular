@@ -1,0 +1,44 @@
+
+////
+/// @section Styles
+/// @group typography
+////
+
+/// Heading 1
+/// @example markup -
+///  <h1>Header 1</h1>
+h1 {}
+
+/// Heading 2
+/// @example markup -
+///  <h2>Header 2</h2>
+h2 {}
+
+/// Heading 3
+/// @example markup -
+///  <h3>Header 3</h3>
+h3 {}
+
+/// Heading 4
+/// @example markup -
+///  <h4>Header 4</h4>
+h4 {}
+
+/// Heading 5
+/// @example markup -
+///  <h5>Header 5</h5>
+h5 {}
+
+/// Heading 6
+/// @example markup -
+///  <h6>Header 6</h6>
+h6 {}
+
+/// Title
+/// @example markup -
+///  <span class="title">Title Text</span>
+.title {
+  font-size: 16px;
+  font-weight: bold;
+}
+

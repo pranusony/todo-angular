@@ -1,10 +1,8 @@
-/**
- * @author: @AngularClass
- */
 
 require('ts-node/register');
 
-var HtmlReporter = require('protractor-jasmine2-html-reporter')
+var HtmlReporter = require('protractor-jasmine2-html-reporter');
+var projectConfig = require('./project.config');
 
 
 module.exports.config = {
@@ -12,8 +10,8 @@ module.exports.config = {
 
   // use `npm run test-e2e`
   specs: [
-    'test/**/**.e2e.ts',
-    'test/**/*.e2e.ts'
+    projectConfig.testsDir+'/**/**.e2e.ts',
+    projectConfig.testsDir+'/**/*.e2e.ts'
   ],
   exclude: [],
 

@@ -1,13 +1,9 @@
 
-//THis module is the entry point of our application and below code helps
-//helps bootstrap the Angular application
+import "reflect-metadata";
+import "rxjs";
+import "zone.js"; // required by angular
 
-/*require("core-js/shim"); // polyfills the browser with any missing modern features
-import 'zone.js/dist/zone'; // required by angular
+import {AppModule} from "./AppModule";
+import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
 
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import {AppModule} from "./app/view_system/index";
-
-platformBrowserDynamic().bootstrapModule(AppModule);*/
-
-console.log("Yay!!!");
+platformBrowserDynamic().bootstrapModule(AppModule);

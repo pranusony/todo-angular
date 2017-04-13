@@ -1,65 +1,47 @@
 
 var util = require('./util');
-var argv = require('minimist')(process.argv.slice(2));
 var sass = require('node-sass');
 var path = require("path");
 var fs = require("fs-extra");
 var projectConfig = require("../project.config");
+var webpack = require("webpack");
 
-var subCommand;
-if(argv._ && argv._.length > 0) //look for release build
-{
-    subCommand = argv._[0].toLowerCase();
-    if(subCommand === "release")
+
+util.series(["npm run clean","npm run lint"], function (err) {
+
+
+    if(err)
     {
-        process.env.NODE_ENV = "production";
-        buildRelease();
-    }
-    else if(subCommand == "local")
-    {
-        util.exec("npm run clean", function (err) {
-
-            if(err)
-            {
-                console.log(err);
-                process.exit(1);
-            }
-
-            util.callTasksInSeries([
-                {fn:buildTypescript},
-                {fn:buildSASS}
-            ],function(err){
-
-                util.finishTask(null,err,true);
-            })
-
-        });
+        console.log(err);
+        process.exit(1);
     }
 
-}
-else // will build only the typescript the src/api directory, use npm run build-local to build locally all typescript and scss files
-{
-    util.exec("npm run clean", function (err) {
+    var tasks;
 
-        if(err)
-        {
-            console.log(err);
-            process.exit(1);
-        }
+    if(process.env.NODE_ENV === projectConfig.envTypes.PRODUCTION)
+    {
+        tasks = [
+            {fn:buildTypescript,fn:bundleFiles}
+        ]
+    }
+    else
+    {
+        tasks = [
+            {fn:buildTypescript,args:[false,true]},{fn:buildSASS}
+        ];
+    }
 
-        buildTypescript(function(err){
-            util.finishTask(null,err,true);
-        });
+    util.callTasksInSeries(tasks,function(err){
 
-    });
-}
+        util.finishTask(null,err,true);
+    })
 
-
+});
 
 function buildSASS(cb) {
 
-    var mainSassFilePath = projectConfig.srcClientDir+"/assets/styles/main.scss";
-    var outFilePath = projectConfig.srcClientDir+"/assets/styles/main.css";
+    var mainSassFilePath = projectConfig.srcDir+"/assets/styles/main.scss";
+    var outFilePath = projectConfig.srcDir+"/assets/styles/main.css";
 
     sass.render({
         file: mainSassFilePath
@@ -82,17 +64,11 @@ function buildSASS(cb) {
 
 }
 
-function buildTypescript(cb,isRelease){
+function buildTypescript(cb){
 
-    var cmd = "tsc";
 
-    if(subCommand !== "local")
-    {
-        cmd = cmd + " -p src/api"; // only need to build api as client code is taken care by webpack
-    }
-
-    if(!isRelease)
-        cmd = cmd + " --sourceMap";
+    var cmd = projectConfig.tsc;
+    cmd = cmd + " -p src/api";
 
     util.exec(cmd, function (err) {
 
@@ -103,34 +79,12 @@ function buildTypescript(cb,isRelease){
 
 function bundleFiles(cb){
 
-    util.exec("webpack -p",function(err) {
+    util.exec(projectConfig.webpack + " -p --env.aot=true",function(err) {
         if(err)
             cb(err);
         else
         {
             cb();
         }
-    });
-}
-
-function buildRelease(){
-
-    util.exec("npm run clean", function (err) {
-
-        var distDir = path.resolve("./dist");
-
-
-        util.callTasksInSeries(
-            [
-                {fn:buildTypescript,
-                    args:[true]
-                },
-                {fn:bundleFiles}
-
-            ]
-            ,function(err){
-                util.finishTask(null,err,true);
-            });
-
     });
 }

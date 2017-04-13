@@ -1,0 +1,62 @@
+
+
+////
+/// @section Styles
+/// @group mixins
+////
+
+
+/// clearfix
+@mixin clearfix() {
+  &:before,
+  &:after {
+    content: "";
+    display: table;
+  }
+  &:after {
+    clear: both;
+  }
+}
+
+/// Adds Horizontal gap in Horizontal Layout
+@mixin horizontalGap($gap)
+{
+  > *
+  {
+    margin-right: $gap;
+  }
+
+  >:last-child
+  {
+    margin-right: 0;
+  }
+}
+
+/// Adds Veritical gap in Verical Layout
+@mixin verticalGap($gap)
+{
+  > *
+  {
+    margin-bottom: $gap;
+  }
+}
+
+/// Puts child elements in vertical layout
+@mixin VGroup($gap:0, $horizontalAlign: flex-start, $verticalAlign:flex-start)
+{
+  @include flexbox();
+  flex-direction: column;
+  @include align($verticalAlign);
+  @include justify-content($horizontalAlign);
+  @include verticalGap($gap)
+}
+
+/// Puts child elements in horizontal layout
+@mixin HGroup($gap:0, $horizontalAlign: left, $verticalAlign:flex-start)
+{
+  @include flexbox();
+  @include align($verticalAlign);
+  @include justify-content($horizontalAlign);
+  @include horizontalGap($gap);
+}
+

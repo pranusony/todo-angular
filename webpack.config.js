@@ -1,16 +1,16 @@
+var projectConfig = require("./project.config");
 
+module.exports = function(options) {
+    options = options || {};
+    options.env = process.env.NODE_ENV || projectConfig.envTypes.DEVELOPMENT;
 
-switch (process.env.NODE_ENV) {
-  case 'prod':
-  case 'production':
-    module.exports = require('./webpack/prod.config')({env: 'production'});
-    break;
-  case 'test':
-  case 'testing':
-    module.exports = require('./webpack/test.config')({env: 'test'});
-    break;
-  case 'dev':
-  case 'development':
-  default:
-    module.exports = require('./webpack/dev.config')({env: 'development'});
+    switch (process.env.NODE_ENV) {
+        case projectConfig.envTypes.PRODUCTION:
+            return require('./webpack/prod.config')(options);
+        case projectConfig.envTypes.TEST:
+            return require('./webpack/test.config')(options);
+        case projectConfig.envTypes.DEVELOPMENT:
+        default:
+            return require('./webpack/dev.config')(options);
+    }
 }

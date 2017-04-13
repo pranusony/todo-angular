@@ -4,11 +4,17 @@
 // released under MIT License
 // version: 0.1.0 (2013/02/01)
 
+var rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;
+var MOZ_HACK_REGEXP = /^moz([A-Z])/;
 
 // execute a single shell command where "cmd" is a string
-exports.exec = function(cmd, cb){
+exports.exec = function(cmd, cb,cwd){
     // this would be way easier on a shell/bash script :P
     var spawn = require('cross-spawn');
+
+    if(cwd)
+        process.chdir(cwd);
 
     var parts = [].concat.apply([], cmd.split('"').map(function(v,i){
         return i%2 ? '"'+v+'"' : v.split(' ')
@@ -35,10 +41,23 @@ exports.series = function(cmds, cb){
 
         var cmd = cmds.shift();
         var doneMessage;
+        var cwd;
         if(Array.isArray(cmd))
         {
+            var options = cmd[1];
             cmd = cmd[0];
-            doneMessage = cmd[1];
+
+            if(options)
+            {
+                if(typeof options === "string")
+                    doneMessage = options;
+                else
+                {
+
+                    cwd = options.cwd;
+                    doneMessage = options.doneMessage;
+                }
+            }
         }
         exports.exec(cmd, function(err){
             if (err) {
@@ -50,7 +69,7 @@ exports.series = function(cmds, cb){
                     cb(null);
                 }
             }
-        });
+        },cwd);
     };
     execNext();
 };
@@ -118,3 +137,23 @@ exports.finishTask = function finishTask(cb,error,doExitOnNoCallBack)
         }
     }
 };
+
+function titleCase(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+exports.titleCase = titleCase;
+function camelCase(name) {
+    return name.
+    replace(SPECIAL_CHARS_REGEXP, function (_, separator, letter, offset) {
+        return offset ? letter.toUpperCase() : letter;
+    }).
+    replace(MOZ_HACK_REGEXP, 'Moz$1');
+}
+exports.camelCase = camelCase;
+function trim(text) {
+    return text == null ?
+        "" :
+        (text + "").replace(rtrim, "");
+}
+exports.trim = trim;
+
